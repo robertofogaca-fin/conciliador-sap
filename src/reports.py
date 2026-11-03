@@ -1,3 +1,17 @@
+import pandas as pd
+
+from src.constants import *
+
+# ------------------------------------------------------------------ Excel
+
+COLUNAS_DETALHE = {
+    "conta_razao": "Conta do Razão", "conta": "Conta corrente", "situacao": "Situação",
+    "doc_razao": "Nº Doc. SAP", "doc_extrato": "Nº Doc. Extrato",
+    "data_razao": "Data razão", "data_extrato": "Data extrato",
+    "dias_diferenca": "Dias de diferença", "valor_razao": "Valor razão",
+    "valor_extrato": "Valor extrato", "diferenca": "Diferença (razão - extrato)",
+    "texto_razao": "Texto razão", "texto_extrato": "Histórico extrato", "acao": "Ação sugerida",
+}
 def exportar_excel(resultado: pd.DataFrame, prova: pd.DataFrame, caminho: str) -> None:
     """Grava o relatório em Excel: Resumo, Prova_Saldo, Detalhe e Pendencias."""
     from openpyxl.styles import Alignment, Font, PatternFill
