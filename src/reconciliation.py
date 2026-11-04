@@ -1,6 +1,22 @@
+from collections import defaultdict
+
 import pandas as pd
 
-from src.constants import *
+from src.constants import (
+    CATEGORIAS_EXTRATO,
+    CONCILIADO,
+    DATA_DIVERGENTE,
+    DEP_TRANSITO,
+    DUPLICADO,
+    ESTORNADO,
+    ESTORNO,
+    PAG_TRANSITO,
+    SO_EXTRATO,
+    TOLERANCIA_DIAS,
+    TOLERANCIA_VALOR_PCT,
+    VALOR_DIVERGENTE,
+)
+
 
 def _linha(situacao, a=None, b=None, dias=None) -> dict:
     """Monta uma linha do resultado. a = lançamento do razão, b = do extrato."""
@@ -57,15 +73,28 @@ def conciliar(razao: pd.DataFrame, extrato: pd.DataFrame,
     linhas = []
     linha_do_extrato = {}   # posição no extrato -> linha do resultado (para duplicidades)
 
+    # Índices: cada busca olha só os candidatos possíveis, em vez de percorrer a lista toda
+    # (sem eles, o custo cresce com o quadrado do número de linhas)
+    por_referencia = defaultdict(list)   # (conta, referência) -> posições no razão
+    for i, a in enumerate(r):
+        if not pd.isna(a["conta"]) and not pd.isna(a["ref"]):
+            por_referencia[(a["conta"], a["ref"])].append(i)
+    por_valor = defaultdict(list)        # (conta, centavos) -> posições no extrato
+    por_contraparte = defaultdict(list)  # (conta, contraparte) -> posições no extrato
+    for j, b in enumerate(e):
+        if not pd.isna(b["conta"]):
+            por_valor[(b["conta"], b["centavos"])].append(j)
+            por_contraparte[(b["conta"], b["contraparte"])].append(j)
+
     # 0. Estornos dentro do razão: mesma referência e valores opostos
     for i, a in enumerate(r):
         if i in usados_r or pd.isna(a["ref"]):
             continue
-        for j, b in enumerate(r):
+        for j in por_referencia.get((a["conta"], a["ref"]), []):
             if j <= i or j in usados_r:
                 continue
-            if (b["conta"] == a["conta"] and b["ref"] == a["ref"]
-                    and b["centavos"] == -a["centavos"]):
+            b = r[j]
+            if b["centavos"] == -a["centavos"]:
                 a_eh_estorno = str(a["texto"]).upper().startswith("ESTORNO") or (
                     not str(b["texto"]).upper().startswith("ESTORNO") and a["data"] > b["data"])
                 original, estorno = (b, a) if a_eh_estorno else (a, b)
@@ -80,9 +109,10 @@ def conciliar(razao: pd.DataFrame, extrato: pd.DataFrame,
             continue
         a = r[i]
         melhor = None
-        for j, b in enumerate(e):
-            if j in usados_e or b["conta"] != a["conta"] or b["centavos"] != a["centavos"]:
+        for j in por_valor.get((a["conta"], a["centavos"]), []):
+            if j in usados_e:
                 continue
+            b = e[j]
             dias = abs((b["data"] - a["data"]).days)
             if dias > tol_dias:
                 continue
@@ -99,27 +129,31 @@ def conciliar(razao: pd.DataFrame, extrato: pd.DataFrame,
             usados_e.add(j)
 
     # 2. Duplicidade no extrato: igual (conta, valor, data, histórico) a um item já conciliado
+    conciliado_por_chave = {}
+    for k, linha in linha_do_extrato.items():
+        o = e[k]
+        if isinstance(o["texto"], str):
+            chave = (o["conta"], o["centavos"], o["data"], o["texto"])
+            conciliado_por_chave.setdefault(chave, linha)   # o primeiro conciliado leva a duplicidade
     for j, b in enumerate(e):
-        if j in usados_e:
+        if j in usados_e or not isinstance(b["texto"], str):
             continue
-        for k, linha in linha_do_extrato.items():
-            o = e[k]
-            if (o["conta"] == b["conta"] and o["centavos"] == b["centavos"]
-                    and o["data"] == b["data"] and o["texto"] == b["texto"]):
-                linha["situacao"] = DUPLICADO
-                linha["_ids_extrato"].append(b["id"])
-                linha["valor_extrato"] = round(linha["valor_extrato"] + b["valor"], 2)
-                usados_e.add(j)
-                break
+        linha = conciliado_por_chave.get((b["conta"], b["centavos"], b["data"], b["texto"]))
+        if linha is not None:
+            linha["situacao"] = DUPLICADO
+            linha["_ids_extrato"].append(b["id"])
+            linha["valor_extrato"] = round(linha["valor_extrato"] + b["valor"], 2)
+            usados_e.add(j)
 
     # 3. Valor divergente: mesma contraparte, mesmo sinal, data próxima, valor parecido
     for i, a in enumerate(r):
         if i in usados_r or a["contraparte"] == "":
             continue
         melhor = None
-        for j, b in enumerate(e):
-            if j in usados_e or b["conta"] != a["conta"] or b["contraparte"] != a["contraparte"]:
+        for j in por_contraparte.get((a["conta"], a["contraparte"]), []):
+            if j in usados_e:
                 continue
+            b = e[j]
             if a["centavos"] * b["centavos"] <= 0:
                 continue
             dias = abs((b["data"] - a["data"]).days)
@@ -154,5 +188,3 @@ def conciliar(razao: pd.DataFrame, extrato: pd.DataFrame,
     df["_data_ref"] = df["data_razao"].fillna(df["data_extrato"])
     df = df.sort_values(["conta_razao", "_data_ref", "doc_extrato"]).drop(columns="_data_ref")
     return df.reset_index(drop=True)
-
-

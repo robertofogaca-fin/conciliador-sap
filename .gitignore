@@ -1,4 +1,11 @@
 .venv/
+venv/
+
 __pycache__/
-saida/
+*/__pycache__/
+
 .pytest_cache/
+
+saida/
+
+*.pyc

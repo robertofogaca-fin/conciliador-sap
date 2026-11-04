@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.constants import *
+from src.constants import SITUACOES_COM_ACAO
 
 # ------------------------------------------------------------------ Excel
 
@@ -12,6 +12,8 @@ COLUNAS_DETALHE = {
     "valor_extrato": "Valor extrato", "diferenca": "Diferença (razão - extrato)",
     "texto_razao": "Texto razão", "texto_extrato": "Histórico extrato", "acao": "Ação sugerida",
 }
+
+
 def exportar_excel(resultado: pd.DataFrame, prova: pd.DataFrame, caminho: str) -> None:
     """Grava o relatório em Excel: Resumo, Prova_Saldo, Detalhe e Pendencias."""
     from openpyxl.styles import Alignment, Font, PatternFill

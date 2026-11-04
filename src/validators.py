@@ -2,7 +2,8 @@ import re
 
 import pandas as pd
 
-from src.constants import *
+from src.constants import DUPLICADO, SITUACOES_SO_RAZAO, SO_EXTRATO, VALOR_DIVERGENTE
+
 
 def prova_de_saldo(resultado: pd.DataFrame, contas: pd.DataFrame) -> pd.DataFrame:
     """Mostra que a diferença de saldo é explicada pelos itens não conciliados."""
@@ -36,6 +37,7 @@ def prova_de_saldo(resultado: pd.DataFrame, contas: pd.DataFrame) -> pd.DataFram
         })
     return pd.DataFrame(linhas).round(2)
 
+
 def validar_contra_gabarito(resultado: pd.DataFrame, caminho: str):
     """Compara o resultado com a aba Gabarito (usada só para conferir, nunca na lógica).
 
@@ -66,5 +68,3 @@ def validar_contra_gabarito(resultado: pd.DataFrame, caminho: str):
     total = len(esperado)
     acertos = total - sum(1 for d in divergencias if d["esperado"] != "(fora do gabarito)")
     return total, acertos, pd.DataFrame(divergencias)
-
-

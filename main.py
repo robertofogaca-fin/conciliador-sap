@@ -1,12 +1,12 @@
-from src.logger import logger
-
 from pathlib import Path
 
 from conciliador_sap import (carregar, conciliar, exportar_excel, prova_de_saldo,
                              validar_contra_gabarito)
+from src.logger import configurar_logs, logger
 
 ARQUIVO = "dados/Base_de_dados_-_contas_bancarias.xlsx"
 
+configurar_logs()
 logger.info("Iniciando processo de conciliação")
 
 razao, extrato, contas = carregar(ARQUIVO)

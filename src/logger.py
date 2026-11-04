@@ -1,8 +1,12 @@
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logger = logging.getLogger("conciliador")
 
-logger = logging.getLogger(__name__)
+
+def configurar_logs(nivel: int = logging.INFO) -> None:
+    """Define o formato dos logs. Chame uma vez, no ponto de entrada (main.py).
+
+    Fica fora da importação para que quem apenas importa o módulo
+    não tenha a configuração de log do seu programa alterada.
+    """
+    logging.basicConfig(level=nivel, format="%(asctime)s - %(levelname)s - %(message)s")
