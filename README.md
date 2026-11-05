@@ -46,9 +46,12 @@ Os valores são comparados em centavos (inteiros), para evitar erros de arredond
 │   └── logger.py           # logger do projeto e configuração do formato (chamada no main.py)
 ├── dados/                  # base de exemplo (fictícia)
 ├── saida/                  # relatório gerado (não versionado)
-├── test_conciliador_sap.py # regras de conciliação e conferência com o gabarito
-├── test_volume.py          # dados sintéticos em volume: nada se perde, saldo fecha
-├── test_dashboard.py       # dashboard Streamlit (modo de teste do próprio Streamlit)
+├── testes/
+│   ├── test_conciliador_sap.py  # regras de conciliação e conferência com o gabarito
+│   ├── test_volume.py           # dados sintéticos em volume: nada se perde, saldo fecha
+│   └── test_dashboard.py        # dashboard Streamlit (modo de teste do próprio Streamlit)
+├── .github/workflows/testes.yml # roda o pytest a cada push
+├── pytest.ini              # configura o pytest (pasta de testes e caminho de importação)
 ├── requirements.txt        # dependências do projeto
 └── requirements-dev.txt    # inclui as dependências de teste
 ```

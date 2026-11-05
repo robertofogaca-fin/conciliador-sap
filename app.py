@@ -136,13 +136,14 @@ if ARQUIVO.exists():
             "📥 Baixar Excel",
             arquivo_excel,
             file_name="conciliacao.xlsx",
-            use_container_width=True
+            width="stretch"
         )
 
 else:
     st.error(
-        "Relatório não encontrado"
+        "Relatório não encontrado. Rode `python main.py` para gerá-lo."
     )
+    st.stop()
 
      
 
@@ -376,7 +377,7 @@ st.subheader("📊 Situações Encontradas")
 
 st.plotly_chart(
     fig_situacoes,
-    use_container_width=True
+    width="stretch"
 )
 
 
