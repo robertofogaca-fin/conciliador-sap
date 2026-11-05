@@ -2,6 +2,9 @@
 
 ![Testes](https://github.com/robertofogaca-fin/conciliador-sap/actions/workflows/testes.yml/badge.svg)
 
+![Dashboard](docs/dashboard-resumo.png)
+![Exceções](docs/dashboard-excecoes.png)
+
 Script em Python que concilia o razão contábil (extrato de contas SAP) com o extrato bancário
 de várias contas correntes, classifica cada diferença e comprova que a soma das pendências
 explica a diferença de saldo. Os resultados podem ser explorados em um dashboard Streamlit.
