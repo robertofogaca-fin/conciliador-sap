@@ -174,7 +174,7 @@ st.divider()
 st.markdown("## 💰 PROVA DE SALDO")
 
 st.caption(
-    "Reconciliação consolidada entre razão contábil e extrato bancário"
+    "Conciliação consolidada entre razão contábil e extrato bancário"
 )
 
 conta = st.selectbox(
